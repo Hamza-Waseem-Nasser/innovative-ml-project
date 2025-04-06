@@ -8,8 +8,8 @@ ENCODERS = {
     "StockCode": "models/enc_StockCode.pkl",
     "Country":   "models/enc_Country.pkl"
 }
-SCALER_PATH = "src/models/scaler_num.pkl"
-MODEL_PATH  = "src/models/tabnet_regressor.zip.zip"
+SCALER_PATH = "models/scaler_num.pkl"
+MODEL_PATH  = "models/tabnet_regressor.zip"
 
 # Load encoders
 encoders = {col: joblib.load(path) for col, path in ENCODERS.items()}

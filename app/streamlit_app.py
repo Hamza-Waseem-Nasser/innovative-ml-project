@@ -28,7 +28,7 @@ st.markdown("""
 @st.cache_resource
 def load_model():
     m = TabNetRegressor()
-    m.load_model("src/models/tabnet_regressor.zip.zip")
+    m.load_model("models/tabnet_regressor.zip")
     return m
 
 @st.cache_resource
@@ -40,7 +40,7 @@ def load_encoders():
 
 @st.cache_resource
 def load_scaler():
-    return joblib.load("src/models/scaler_num.pkl")
+    return joblib.load("models/scaler_num.pkl")
 
 @st.cache_data
 def load_data():
