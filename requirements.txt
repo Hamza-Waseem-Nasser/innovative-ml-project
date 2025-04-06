@@ -4,4 +4,16 @@ joblib
 streamlit
 fastapi
 uvicorn
+matplotlib
+seaborn
+numpy
+jupyterlab
+pytorch-tabnet==3.1.1
+torch
+torchvision
 transformers
+fastapi
+uvicorn
+pydantic
+joblib
+plotly
