@@ -14,6 +14,8 @@ An end‑to‑end system that ingests real retail transactions, cleans and analy
 4. [Getting Started](#getting-started)  
    - [Prerequisites](#prerequisites)  
    - [Installation](#installation)  
+   - [Quick‑Start (Docker)](#quick-start-docker)  
+   - [Quick‑Start (Local Python)](#quick-start-local-python)  
    - [Project Structure](#project-structure)  
 5. [Data Preprocessing](#data-preprocessing)  
 6. [Model Training](#model-training)  
@@ -21,10 +23,12 @@ An end‑to‑end system that ingests real retail transactions, cleans and analy
 8. [API Service (FastAPI)](#api-service-fastapi)  
 9. [Dashboard (Streamlit)](#dashboard-streamlit)  
 10. [Containerization (Docker)](#containerization-docker)  
-11. [Future Work](#future-work)  
-12. [Contributing](#contributing)  
-13. [License](#license)  
-14. [Contact](#contact)  
+11. [Distribution & Submission](#distribution--submission)  
+12. [Future Work](#future-work)  
+13. [Contributing](#contributing)  
+14. [License](#license)  
+15. [Contact](#contact)  
+16. [Links](#links)  
 
 ---
 
@@ -59,16 +63,16 @@ We use the **Online Retail II** dataset (UCI/Kaggle), containing ~500 K real t
 
 Key fields:
 
-| Column       | Type      | Description                           |
-|--------------|-----------|---------------------------------------|
-| Invoice      | string    | Invoice number (prefix “C” for returns) |
-| StockCode    | string    | Unique product code                   |
-| Description  | string    | Product description                   |
-| Quantity     | int       | Number of items                       |
-| InvoiceDate  | datetime  | Invoice timestamp                     |
-| UnitPrice    | float     | Price per item                        |
-| CustomerID   | int       | Unique customer identifier            |
-| Country      | string    | Country of purchase                   |
+| Column       | Type      | Description                              |
+|--------------|-----------|------------------------------------------|
+| Invoice      | string    | Invoice number (prefix “C” for returns)  |
+| StockCode    | string    | Unique product code                      |
+| Description  | string    | Product description                      |
+| Quantity     | int       | Number of items                          |
+| InvoiceDate  | datetime  | Invoice timestamp                        |
+| UnitPrice    | float     | Price per item                           |
+| CustomerID   | int       | Unique customer identifier               |
+| Country      | string    | Country of purchase                      |
 
 ---
 
@@ -78,6 +82,7 @@ Key fields:
 
 - **Python 3.10+**  
 - **Git**  
+- **Docker & Docker‑Compose** (for containerized setup)  
 - **VS Code** (optional, recommended)  
 - **Windows / macOS / Linux**
 
@@ -98,6 +103,49 @@ source .venv/bin/activate
 # 3. Install dependencies
 pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
+```
+
+### Quick‑Start (Docker)
+
+```bash
+# 1. Unzip package (if provided as ZIP)
+unzip innovative-ml-project.zip && cd innovative-ml-project
+
+# 2. Build and run both services
+docker-compose up --build
+
+# 3. Visit in your browser:
+#    • API Swagger UI: http://localhost:8000/docs
+#    • Dashboard:      http://localhost:8501
+```
+
+### Quick‑Start (Local Python)
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/Hamza-Waseem-Nasser/innovative-ml-project.git
+cd innovative-ml-project
+
+# 2. Create & activate venv
+python -m venv .venv
+# Windows:
+.\.venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
+
+# 3. Install dependencies
+pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+
+# 4. Start the API
+uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+
+# 5. In a new terminal, start the Dashboard
+streamlit run app/streamlit_app.py
+
+# 6. Visit:
+#    • API Swagger UI: http://localhost:8000/docs
+#    • Dashboard:      http://localhost:8501
 ```
 
 ### Project Structure
@@ -129,6 +177,9 @@ innovative-ml-project/
 │   ├── train_tabnet.ipynb
 │   └── evaluate_tabnet.ipynb
 ├── requirements.txt         # Python dependencies
+├── Dockerfile.api           # Dockerfile for FastAPI service
+├── Dockerfile.ui            # Dockerfile for Streamlit UI
+├── docker-compose.yml       # Compose file for both services
 └── README.md                # This file
 ```
 
@@ -146,7 +197,7 @@ innovative-ml-project/
    - `data/transactions_clean.csv`  
    - `data/rfm_summary.csv`  
 
-*(EDA notebook: `notebooks/eda_online_retail.ipynb`)*
+*(See `notebooks/eda_online_retail.ipynb` for full EDA)*
 
 ---
 
@@ -161,7 +212,7 @@ We use **PyTorch‑TabNet** with self‑supervised pretraining:
    - `tabnet_regressor.zip`  
    - Encoders & scaler (`.pkl` files)  
 
-*(Training notebook: `src/train_tabnet.ipynb`)*
+*(See `src/train_tabnet.ipynb` for code)*
 
 ---
 
@@ -169,8 +220,9 @@ We use **PyTorch‑TabNet** with self‑supervised pretraining:
 
 - **Hold‑out split**: 80/20, `random_state=42`  
 - **Metric**: Root Mean Squared Error (RMSE) on test set  
-- **Baseline comparisons**: (e.g., RandomForest, LinearRegression)  
-- **Evaluation notebook**: `src/evaluate_tabnet.ipynb`  
+- **Baseline comparisons**: RandomForest, LinearRegression  
+- **Results**: TabNet outperforms baselines  
+- **Notebook**: `src/evaluate_tabnet.ipynb`
 
 ---
 
@@ -214,33 +266,29 @@ Open **http://localhost:8501**.
 
 You can containerize both services for easy deployment.
 
-### Sample `Dockerfile` for API
+### Dockerfile for API
 
 ```dockerfile
 FROM python:3.10-slim
 WORKDIR /app
-COPY requirements.txt .
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
-COPY api/ ./api
-COPY models/ ./models
-COPY data/ ./data
+COPY api/ models/ data/ ./
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-### Sample `Dockerfile` for Dashboard
+### Dockerfile for Dashboard
 
 ```dockerfile
 FROM python:3.10-slim
 WORKDIR /app
-COPY requirements.txt .
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
-COPY app/ ./app
-COPY models/ ./models
-COPY data/ ./data
+COPY app/ models/ data/ ./
 CMD ["streamlit", "run", "app/streamlit_app.py", "--server.address=0.0.0.0", "--server.port=8501"]
 ```
 
-### `docker-compose.yml` Example
+### docker-compose.yml
 
 ```yaml
 version: '3.8'
@@ -258,6 +306,31 @@ services:
     ports:
       - "8501:8501"
 ```
+
+**Run both**:
+
+```bash
+docker-compose up --build
+```
+
+---
+
+## Distribution & Submission
+
+To package your project for submission:
+
+1. **Clean** out your virtual environment (`.venv/`) and any `__pycache__` folders.  
+2. **Verify** your `.gitignore` excludes those.  
+3. **Zip** the project directory (excluding venv) from its parent folder:
+
+   ```bash
+   zip -r innovative-ml-project.zip innovative-ml-project \
+     -x "innovative-ml-project/.venv/*" \
+     -x "innovative-ml-project/__pycache__/*"
+   ```
+
+4. **Submit** `innovative-ml-project.zip`.  
+5. **Reviewers** can unzip, then choose Docker or Local Python quick‑start steps above to run the full end‑to‑end project.
 
 ---
 
@@ -295,6 +368,11 @@ This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for d
 
 **Hamza Waseem Nasser**  
 - GitHub: [@Hamza-Waseem-Nasser](https://github.com/Hamza-Waseem-Nasser)  
-- Email: *your.email@example.com*  
+- Email: *your.email@example.com*
 
-Feel free to reach out with questions or collaboration ideas!
+---
+
+## Links
+
+- **GitHub Repo**: https://github.com/Hamza-Waseem-Nasser/innovative-ml-project  
+- **Live Demo**: *https://your-deployed-app.com* (if available)
